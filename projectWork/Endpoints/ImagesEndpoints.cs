@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using projectWork.Services;
 
 namespace projectWork.Endpoints;
@@ -8,6 +9,18 @@ public static class ImagesEndpoints
     public static void AddImagesEndpoints(this IEndpointRouteBuilder route)
     {
         var group = route.MapGroup("/api/images");
+
+        group.AddEndpointFilter(async (context, next) =>
+        {
+            var authService = context.HttpContext.RequestServices.GetRequiredService<Authentication>();
+            var request = context.HttpContext.Request;
+
+            var result = await authService.VerifyAccessToken(context.HttpContext);
+            if (result.Result is not Ok)
+                return result.Result;
+
+            return await next(context);
+        }).RequireAuthorization();
 
         group.MapGet("/", GetImagesAsync);
         group.MapGet("/{id:int}", GetImageByIdAsync);

@@ -1,5 +1,9 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using projectWork.Authentication;
 using projectWork.Endpoints;
 using projectWork.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +11,35 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ImagesServices>();
+builder.Services.AddScoped<Authentication>();
+
+var jwtKey = "la-tua-chiave-segreta-lunga-almeno-32-caratteri";
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Dice ad ASP.NET di leggere il token dal cookie invece che dall'header Authorization
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                ctx.Token = ctx.Request.Cookies["AccessToken"];
+                return Task.CompletedTask;
+            }
+        };
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            // il token scade esattamente quando scade, asp.net lo accetterebbe anche 5 min dopo
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -16,8 +49,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.AddImagesEndpoints();
+
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 app.Run();
