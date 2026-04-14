@@ -1,23 +1,52 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Dapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.IdentityModel.Tokens;
+using projectWork.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace projectWork.Authentication;
 
 public class Authentication
 {
-    // ======================================================================= Verify access token
-    public async Task<Results<Ok, UnauthorizedHttpResult>> VerifyAccessToken(HttpContext context)
+    private readonly string _connectionString;
+    private readonly string _jwtSecret;
+    public Authentication(IConfiguration configuration)
     {
-        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
+        _connectionString = configuration.GetConnectionString("db");
+        _jwtSecret = configuration["jwtSecret"];
+    }
+    // ======================================================================= Verify access token
+    public async Task<Results<Ok<User>, UnauthorizedHttpResult>> VerifyAccessToken(HttpContext context)
+    {
+        var userId = context.User.FindFirst("userId")?.Value;
 
-        if(true)// Qui andresti sul DB con userId per prendere i dati dell'utente
-            return TypedResults.Ok();
-        else
+        if(userId is null)
             return TypedResults.Unauthorized();
+
+        //ora con l'id dello user, fai quello che devi
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            SELECT
+                user_id AS id,
+                username,
+                password,
+                email,
+                verified,
+                admin,
+                collaborator
+            FROM users
+            WHERE
+                user_id = @userId
+            """;
+
+        var user = await connection.QueryFirstAsync<User>(query, new { userId = int.Parse(userId) });
+
+        return TypedResults.Ok(user);
     }
 
     // ======================================================================= Verify Refresh token
@@ -29,8 +58,11 @@ public class Authentication
             return TypedResults.Unauthorized();
 
         // verifica che il refresh token esista nel DB e non sia scaduto
+        var userId = await FindRefreshToken(refreshToken);
+        if(userId == null)
+            return TypedResults.Unauthorized();
 
-        var newAccessToken = GenerateAccessToken("id");
+        var newAccessToken = GenerateAccessToken(userId.ToString()!);
 
         context.Response.Cookies.Append("AccessToken", newAccessToken, new CookieOptions
         {
@@ -43,15 +75,34 @@ public class Authentication
         return TypedResults.Ok();
     }
 
+    // ======================================================================= Find Refresh token
+    public async Task<int?> FindRefreshToken(string refreshToken)
+    {
+        var hashed = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
+        var base64Token = Convert.ToBase64String(hashed);
+
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            SELECT
+                u.user_id
+            FROM sessions s
+            JOIN users u ON s.user_id = u.user_id
+            WHERE token = @refreshToken
+            """;
+
+        return await connection.QueryFirstOrDefaultAsync<int?>(query, new { refreshToken = base64Token });
+    }
+
     // ======================================================================= Generate access token
     public string GenerateAccessToken(string userId)
     {
-        var jwtKey = "la-tua-chiave-segreta-lunga-almeno-32-caratteri";
-        var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+        var keyBytes = Encoding.UTF8.GetBytes(_jwtSecret);
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, userId)
+            new Claim("userId", userId)
         };
 
         var token = new JwtSecurityToken(
@@ -65,9 +116,46 @@ public class Authentication
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    // ======================================================================= Verify login
+    public async Task<int?> VerifyLogin(string username, string password)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            SELECT
+                user_id
+            FROM users
+            WHERE
+                username = @username AND
+                password = @password
+            """;
+
+        return await connection.QueryFirstOrDefaultAsync<int?>(query, new {username, password});
+    }
+
     // ======================================================================= Generate refresh token
     public string GenerateRefreshToken()
     {
         return Guid.NewGuid().ToString();
+    }
+
+    // ======================================================================= Save refresh token in db
+    public async Task SaveRefreshToken(string refreshToken, int userId)
+    {
+        var hashed = SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken));
+        var base64Token = Convert.ToBase64String(hashed);
+
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            INSERT INTO sessions
+                (token, user_id)
+            VALUES
+                (@refreshToken, @userId)
+            """;
+
+        await connection.ExecuteAsync(query, new {refreshToken = base64Token, userId});
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace projectWork.Authentication;
 
@@ -31,19 +32,21 @@ public static class AuthEndpoints
         {
             var authService = context.RequestServices.GetRequiredService<Authentication>();
 
-            var email = context.Request.Form["email"].ToString();
+            var username = context.Request.Form["username"].ToString();
             var password = context.Request.Form["password"].ToString();
 
-            if (email == "" || password == "")
+            if (username == "" || password == "")
                 return TypedResults.BadRequest();
 
-            //verificare mail e password dal db e prendere user id
+            var userId = await authService.VerifyLogin(username, password);
+            if (userId is null)
+                return TypedResults.BadRequest();
 
-            var userId = "0";
-            var accessToken = authService.GenerateAccessToken(userId);
+            var accessToken = authService.GenerateAccessToken(userId.ToString()!);
             var refreshToken = Guid.NewGuid().ToString();
 
-            // memorizza nel db il refreshToken (hash forte)
+            //token viene hashato con sha256, tradotto in base64 e salvato nel db
+            await authService.SaveRefreshToken(refreshToken, (int)userId);
 
             context.Response.Cookies.Append("AccessToken", accessToken, new CookieOptions
             {
@@ -62,6 +65,6 @@ public static class AuthEndpoints
             });
 
             return TypedResults.Ok();
-        });
+        }).Accepts<IFormCollection>("application/x-www-form-urlencoded"); ;
     }
 }

@@ -13,8 +13,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ImagesServices>();
 builder.Services.AddScoped<Authentication>();
 
-var jwtKey = "la-tua-chiave-segreta-lunga-almeno-32-caratteri";
-var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+var keyBytes = Encoding.UTF8.GetBytes(builder.Configuration["jwtSecret"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

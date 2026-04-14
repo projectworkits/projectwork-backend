@@ -6,7 +6,7 @@ public class User
     public string Username { get; set; }
     public string Email { get; set; }
     public string Password { get; set; }
-    public DateTime VerifiedAt { get; set; }
+    public DateTime Verified { get; set; }
     public bool Admin { get; set; }
     public bool Collaborator { get; set; }
 }
