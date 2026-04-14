@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using projectWork.Services;
 
 namespace projectWork.Endpoints;
@@ -12,7 +11,7 @@ public static class ImagesEndpoints
 
         group.AddEndpointFilter(async (context, next) =>
         {
-            var authService = context.HttpContext.RequestServices.GetRequiredService<Authentication>();
+            var authService = context.HttpContext.RequestServices.GetRequiredService<Authentication.Authentication>();
             var request = context.HttpContext.Request;
 
             var result = await authService.VerifyAccessToken(context.HttpContext);
