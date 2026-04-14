@@ -2,9 +2,9 @@
 
 namespace projectWork.Authentication;
 
-public static class RefreshEndpoint
+public static class AuthEndpoints
 {
-    public static void AddRefreshEndpoint(this IEndpointRouteBuilder route)
+    public static void AddAuthenticationEndpoints(this IEndpointRouteBuilder route)
     {
         route.MapGet("/api/auth/refresh", async Task<Results<Ok, UnauthorizedHttpResult>> (HttpContext context) =>
         {
