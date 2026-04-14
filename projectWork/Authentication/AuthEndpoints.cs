@@ -6,7 +6,9 @@ public static class AuthEndpoints
 {
     public static void AddAuthenticationEndpoints(this IEndpointRouteBuilder route)
     {
-        route.MapGet("/api/auth/refresh", async Task<Results<Ok, UnauthorizedHttpResult>> (HttpContext context) =>
+        var group = route.MapGroup("/api/auth");
+
+        group.MapGet("/refresh", async Task<Results<Ok, UnauthorizedHttpResult>> (HttpContext context) =>
         {
             var authService = context.RequestServices.GetRequiredService<Authentication>();
             var result = await authService.VerifyRefreshToken(context);
@@ -17,7 +19,7 @@ public static class AuthEndpoints
             return TypedResults.Ok();
         });
 
-        route.MapGet("/api/auth/logout", async Task<Ok> (HttpContext context) =>
+        route.MapGet("/logout", async Task<Ok> (HttpContext context) =>
         {
             context.Response.Cookies.Delete("AccessToken");
             context.Response.Cookies.Delete("RefreshToken");
@@ -25,7 +27,7 @@ public static class AuthEndpoints
             return TypedResults.Ok();
         });
 
-        route.MapPost("/api/auth/login", async Task<Results<Ok, BadRequest>> (HttpContext context) =>
+        route.MapPost("/login", async Task<Results<Ok, BadRequest>> (HttpContext context) =>
         {
             var authService = context.RequestServices.GetRequiredService<Authentication>();
 
