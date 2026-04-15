@@ -29,16 +29,16 @@ public static class AuthEndpoints
             return TypedResults.Ok();
         }); 
 
-        group.MapPost("/login", async Task<Results<Ok, BadRequest>> ([FromBody] LoginRequest request, HttpContext context) =>
+        group.MapPost("/login", async Task<Results<Ok, UnauthorizedHttpResult>> ([FromBody] LoginRequest request, HttpContext context) =>
         {
             var authService = context.RequestServices.GetRequiredService<Authentication>();
 
             if (request.Username == "" || request.Password == "")
-                return TypedResults.BadRequest();
+                return TypedResults.Unauthorized();
 
             var userId = await authService.VerifyLogin(request.Username, request.Password);
             if (userId is null)
-                return TypedResults.BadRequest();
+                return TypedResults.Unauthorized();
 
             var accessToken = authService.GenerateAccessToken(userId.ToString()!);
             var refreshToken = Guid.NewGuid().ToString();
