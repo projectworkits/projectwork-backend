@@ -11,9 +11,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAntiforgery();
 
-builder.Services.AddScoped<ImagesServices>();
 builder.Services.AddScoped<Authentication>();
 builder.Services.AddScoped<PasswordServices>();
+
+builder.Services.AddScoped<ImagesServices>();
+builder.Services.AddScoped<UsersServices>();
 
 var keyBytes = Encoding.UTF8.GetBytes(builder.Configuration["jwtSecret"]);
 
