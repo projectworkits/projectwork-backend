@@ -13,10 +13,12 @@ public class Authentication
 {
     private readonly string _connectionString;
     private readonly string _jwtSecret;
-    public Authentication(IConfiguration configuration)
+    private readonly PasswordServices _passwordServices;
+    public Authentication(IConfiguration configuration, PasswordServices passwordServices)
     {
         _connectionString = configuration.GetConnectionString("db");
         _jwtSecret = configuration["jwtSecret"];
+        _passwordServices = passwordServices;
     }
     // ======================================================================= Verify access token
     public async Task<Results<Ok<User>, UnauthorizedHttpResult>> VerifyAccessToken(HttpContext context)
@@ -122,16 +124,28 @@ public class Authentication
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        string query = """
+        string passwordQuery = """
             SELECT
+                password_salt,
+                password_hash,
                 user_id
             FROM users
             WHERE
-                username = @username AND
-                password = @password
+                username = @username;
             """;
 
-        return await connection.QueryFirstOrDefaultAsync<int?>(query, new {username, password});
+        var row = await connection.QueryFirstOrDefaultAsync(passwordQuery, new {username});
+
+        if (row is null)
+            return null;
+
+        string salt = row.PasswordSalt;
+        string hash = row.Hash;
+
+        if(_passwordServices.VerifyPassword(password, hash, salt))
+            return row.Id;
+
+        return null;
     }
 
     // ======================================================================= Generate refresh token
