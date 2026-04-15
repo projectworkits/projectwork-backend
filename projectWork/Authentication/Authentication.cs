@@ -143,7 +143,7 @@ public class Authentication
         string hash = row.password_hash;
 
         if(_passwordServices.VerifyPassword(password, hash, salt))
-            return row.Id;
+            return row.user_id;
 
         return null;
     }

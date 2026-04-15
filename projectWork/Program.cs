@@ -17,7 +17,7 @@ builder.Services.AddScoped<PasswordServices>();
 builder.Services.AddScoped<ImagesServices>();
 builder.Services.AddScoped<UsersServices>();
 
-var keyBytes = Encoding.UTF8.GetBytes(builder.Configuration["jwtSecret"]);
+var keyBytes = Encoding.UTF8.GetBytes(builder.Configuration["jwtSecret"] ?? "deve-essere-di-almeno-32-caratteri");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
