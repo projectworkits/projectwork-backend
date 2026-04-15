@@ -139,8 +139,8 @@ public class Authentication
         if (row is null)
             return null;
 
-        string salt = row.PasswordSalt;
-        string hash = row.Hash;
+        string salt = row.password_salt;
+        string hash = row.password_hash;
 
         if(_passwordServices.VerifyPassword(password, hash, salt))
             return row.Id;
