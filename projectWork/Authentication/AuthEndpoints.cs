@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace projectWork.Authentication;
 
 public static class AuthEndpoints
 {
+    record LoginRequest(string Username, string Password);
     public static void AddAuthenticationEndpoints(this IEndpointRouteBuilder route)
     {
         var group = route.MapGroup("/api/auth");
@@ -25,19 +27,16 @@ public static class AuthEndpoints
             context.Response.Cookies.Delete("RefreshToken");
 
             return TypedResults.Ok();
-        });
+        }); 
 
-        group.MapPost("/login", async Task<Results<Ok, BadRequest>> (HttpContext context) =>
+        group.MapPost("/login", async Task<Results<Ok, BadRequest>> ([FromBody] LoginRequest request, HttpContext context) =>
         {
             var authService = context.RequestServices.GetRequiredService<Authentication>();
 
-            var username = context.Request.Form["username"].ToString();
-            var password = context.Request.Form["password"].ToString();
-
-            if (username == "" || password == "")
+            if (request.Username == "" || request.Password == "")
                 return TypedResults.BadRequest();
 
-            var userId = await authService.VerifyLogin(username, password);
+            var userId = await authService.VerifyLogin(request.Username, request.Password);
             if (userId is null)
                 return TypedResults.BadRequest();
 
@@ -64,6 +63,6 @@ public static class AuthEndpoints
             });
 
             return TypedResults.Ok();
-        }).Accepts<IFormCollection>("application/x-www-form-urlencoded"); ;
+        }).Accepts<LoginRequest>("application/json").DisableAntiforgery();
     }
 }
