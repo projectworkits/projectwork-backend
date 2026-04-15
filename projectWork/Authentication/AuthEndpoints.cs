@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 
 namespace projectWork.Authentication;
 
@@ -20,7 +19,7 @@ public static class AuthEndpoints
             return TypedResults.Ok();
         });
 
-        route.MapGet("/logout", async Task<Ok> (HttpContext context) =>
+        group.MapGet("/logout", async Task<Ok> (HttpContext context) =>
         {
             context.Response.Cookies.Delete("AccessToken");
             context.Response.Cookies.Delete("RefreshToken");
@@ -28,7 +27,7 @@ public static class AuthEndpoints
             return TypedResults.Ok();
         });
 
-        route.MapPost("/login", async Task<Results<Ok, BadRequest>> (HttpContext context) =>
+        group.MapPost("/login", async Task<Results<Ok, BadRequest>> (HttpContext context) =>
         {
             var authService = context.RequestServices.GetRequiredService<Authentication>();
 
