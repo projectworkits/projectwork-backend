@@ -103,22 +103,9 @@ public class ImagesServices
     }
 
     // =============================================================================== Upload immagini
-    public async Task UploadAsync(HttpRequest request)
+    public async Task UploadAsync(IFormFile file, string path)
     {
-        var form = await request.ReadFormAsync();
-        var file = form.Files.GetFile("photo");
-
-        Image img = new Image();
-
-        img.Title = form["Title"];
-        img.OriginalTitle = form["OriginalTitle"];
-        img.Year = short.Parse(form["Title"]);
-        img.Place = form["Place"];
-        img.Path = "/photos/" + Guid.NewGuid();
-
-        using var stream = new FileStream(img.Path, FileMode.Create);
+        using var stream = new FileStream(path, FileMode.Create);
         await file.CopyToAsync(stream);
-
-        await InsertAsync(img);
     }
 }

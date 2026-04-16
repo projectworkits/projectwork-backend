@@ -1,11 +1,21 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using projectWork.Services;
 using projectWork.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 
 namespace projectWork.Endpoints;
 
 public static class ImagesEndpoints
 {
+    public record ImgUpload(
+        [FromForm] IFormFile photo,
+        [FromForm] string title,
+        [FromForm] string originalTitle,
+        [FromForm] short year,
+        [FromForm] string place
+    );
+
     public static void AddImagesEndpoints(this IEndpointRouteBuilder route)
     {
         var group = route.MapGroup("/api/photos").WithTags("api photos");
@@ -66,15 +76,23 @@ public static class ImagesEndpoints
 
     // =============================================================================== Upload immagini
 
-    public static async Task<Results<Ok, BadRequest<string>>> Upload(ImagesServices imagesServices, HttpRequest request)
+    public static async Task<Results<Ok, BadRequest<string>>> Upload(ImagesServices imagesServices, ImgUpload request)
     {
-        var form = await request.ReadFormAsync();
-        var file = form.Files.GetFile("photo");
+        var file = request.photo;
 
         if (file == null || file.Length == 0)
             return TypedResults.BadRequest("Nessun file caricato");
 
-        await imagesServices.UploadAsync(request);
+        Image img = new();
+
+        img.Title = request.title;
+        img.OriginalTitle = request.originalTitle;
+        img.Year = request.year;
+        img.Place = request.place;
+        img.Path = "/photos/" + Guid.NewGuid();
+
+        await imagesServices.UploadAsync(file, img.Path);
+        await imagesServices.InsertAsync(img);
 
         return TypedResults.Ok();
     }
