@@ -66,19 +66,8 @@ public class ImagesServices
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        var parameters = new
-        {
-            Id = image.Id,
-            Title = image.Title,
-            OriginalTitle = image.OriginalTitle,
-            Year = image.Year,
-            Place = image.Place,
-            Path = image.Path,
-            Description = image.Description,
-            State = image.State.ToString().ToLower(),
-            Price = image.Price,
-            BookedBy = image.BookedBy
-        };
+        var parameters = new DynamicParameters(image);
+        parameters.Add("State", image.State.ToString().ToLower());
 
         string query = """
             INSERT INTO public.photos
