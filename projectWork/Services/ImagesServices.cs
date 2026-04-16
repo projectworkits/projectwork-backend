@@ -19,7 +19,7 @@ public class ImagesServices
 
         string query = """
             SELECT
-                image_id AS Id,
+                photo_id AS Id,
                 title,
                 original_title,
                 year,
@@ -39,7 +39,7 @@ public class ImagesServices
 
         string query = """
             SELECT
-                image_id AS Id,
+                photo_id AS Id,
                 title,
                 original_title,
                 year,
@@ -47,7 +47,7 @@ public class ImagesServices
                 path
             FROM public.photos
             WHERE
-                image_id = @Id;
+                photo_id = @Id;
             """;
 
         return await connection.QuerySingleOrDefaultAsync<Image>(query, new { Id = id });
@@ -63,7 +63,7 @@ public class ImagesServices
                 (title, original_title, year, place, path)
             VALUES
                 (@Title, @OriginalTitle, @Year, @Place, @Path)
-            RETURNING image_id;
+            RETURNING photo_id;
             """;
 
         return await connection.QuerySingleAsync<int>(query, image);
@@ -83,7 +83,7 @@ public class ImagesServices
                 place = @Place,
                 path = @Path
             WHERE
-                image_id = @Id;
+                photo_id = @Id;
             """;
 
         await connection.ExecuteAsync(query, image);
@@ -96,7 +96,7 @@ public class ImagesServices
 
         string query = """
             DELETE FROM public.photos
-            WHERE image_id = @Id;
+            WHERE photo_id = @Id;
             """;
 
         await connection.ExecuteAsync(query, new { Id = id });
