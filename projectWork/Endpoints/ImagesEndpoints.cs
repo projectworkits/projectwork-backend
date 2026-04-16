@@ -90,7 +90,7 @@ public static class ImagesEndpoints
         img.OriginalTitle = request.originalTitle;
         img.Year = request.year;
         img.Place = request.place;
-        img.Path = "/photos/" + Guid.NewGuid().ToString();
+        img.Path = $"/photos/{Guid.NewGuid()}.{Path.GetExtension(file.FileName)}";
 
         await imagesServices.UploadAsync(file, img.Path);
         await imagesServices.InsertAsync(img);
