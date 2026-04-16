@@ -1,5 +1,12 @@
 ﻿namespace projectWork.Models;
 
+public enum PhotoState
+{
+    available,
+    booked,
+    sold
+}
+
 public class Image
 {
     public int Id { get; set; }
