@@ -24,7 +24,11 @@ public class ImagesServices
                 original_title,
                 year,
                 place,
-                path
+                path,
+                description,
+                state,
+                price,
+                booked_by
             FROM public.photos;
             """;
 
@@ -44,7 +48,11 @@ public class ImagesServices
                 original_title,
                 year,
                 place,
-                path
+                path,
+                description,
+                state,
+                price,
+                booked_by
             FROM public.photos
             WHERE
                 photo_id = @Id;
@@ -60,9 +68,9 @@ public class ImagesServices
 
         string query = """
             INSERT INTO public.photos
-                (title, original_title, year, place, path)
+                (title, original_title, year, place, path, description, state, price, booked_by)
             VALUES
-                (@Title, @OriginalTitle, @Year, @Place, @Path)
+                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State, @Price, @BookedBy)
             RETURNING photo_id;
             """;
 
@@ -81,7 +89,11 @@ public class ImagesServices
                 original_title = @OriginalTitle,
                 year = @Year,
                 place = @Place,
-                path = @Path
+                path = @Path,
+                description = @description,
+                state = @State,
+                price = @price,
+                booked_by = @BookedBy
             WHERE
                 photo_id = @Id;
             """;
