@@ -66,6 +66,20 @@ public class ImagesServices
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
+        var parameters = new
+        {
+            Id = image.Id,
+            Title = image.Title,
+            OriginalTitle = image.OriginalTitle,
+            Year = image.Year,
+            Place = image.Place,
+            Path = image.Path,
+            Description = image.Description,
+            State = image.State.ToString().ToLower(),
+            Price = image.Price,
+            BookedBy = image.BookedBy
+        };
+
         string query = """
             INSERT INTO public.photos
                 (title, original_title, year, place, path, description, state, price, booked_by)
@@ -74,7 +88,7 @@ public class ImagesServices
             RETURNING photo_id;
             """;
 
-        return await connection.QuerySingleAsync<int>(query, image);
+        return await connection.QuerySingleAsync<int>(query, parameters);
     }
 
     public async Task UpdateAsync(Image image)
