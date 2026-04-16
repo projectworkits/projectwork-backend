@@ -76,7 +76,6 @@ public class ImagesServices
                 (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy)
             RETURNING photo_id;
             """;
-
         return await connection.QuerySingleAsync<int>(query, parameters);
     }
 
@@ -84,6 +83,9 @@ public class ImagesServices
     {
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
+
+        var parameters = new DynamicParameters(image);
+        parameters.Add("State", image.State.ToString().ToLower());
 
         string query = """
             UPDATE public.photos
