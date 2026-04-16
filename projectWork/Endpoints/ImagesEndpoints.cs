@@ -76,7 +76,8 @@ public static class ImagesEndpoints
 
     // =============================================================================== Upload immagini
 
-    public static async Task<Results<Ok, BadRequest<string>>> Upload(ImagesServices imagesServices, ImgUpload request)
+    // necessario [FromForm] nel parametro, altrimenti legge come json
+    public static async Task<Results<Ok, BadRequest<string>>> Upload(ImagesServices imagesServices, [FromForm] ImgUpload request)
     {
         var file = request.photo;
 
