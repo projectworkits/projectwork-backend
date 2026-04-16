@@ -15,7 +15,7 @@ public static class ImagesEndpoints
         [FromForm] short year,
         [FromForm] string place,
         [FromForm] string? description,
-        [FromForm] string state,
+        [FromForm] PhotoState state,
         [FromForm] decimal price,
         [FromForm] int? bookedBy
     );
