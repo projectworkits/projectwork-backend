@@ -19,7 +19,7 @@ public static class UsersEndpoints
                 return TypedResults.Unauthorized();
         */
 
-        var group = route.MapGroup("/api/users").WithName("api users");
+        var group = route.MapGroup("/api/users").WithTags("api users");
 
         group.MapPost("/register", async Task<Results<Ok, BadRequest>> ([FromBody] RegisterRequest request, HttpContext context) =>
         {
