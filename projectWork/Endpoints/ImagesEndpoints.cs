@@ -30,7 +30,7 @@ public static class ImagesEndpoints
         group.MapDelete("/{id:int}", DeleteImageAsync);
 
         // upload immagini
-        route.MapPost("/api/upload", Upload).Accepts<ImgUpload>("multipart/form-data").WithTags("uploadImmagini");
+        route.MapPost("/api/upload", Upload).Accepts<ImgUpload>("multipart/form-data").WithTags("uploadImmagini").DisableAntiforgery();
     }
 
     public static async Task<Ok<IEnumerable<Models.Image>>> GetImagesAsync(ImagesServices imagesServices)
