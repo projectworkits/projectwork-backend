@@ -13,7 +13,11 @@ public static class ImagesEndpoints
         [FromForm] string title,
         [FromForm] string originalTitle,
         [FromForm] short year,
-        [FromForm] string place
+        [FromForm] string place,
+        [FromForm] string description,
+        [FromForm] string state,
+        [FromForm] decimal price,
+        [FromForm] int bookedBy
     );
 
     public static void AddImagesEndpoints(this IEndpointRouteBuilder route)
@@ -91,6 +95,10 @@ public static class ImagesEndpoints
         img.Year = request.year;
         img.Place = request.place;
         img.Path = $"/photos/{Guid.NewGuid()}.{Path.GetExtension(file.FileName)}";
+        img.Description = request.description;
+        img.State = request.state;
+        img.Price = request.price;
+        img.BookedBy = request.bookedBy;
 
         await imagesServices.UploadAsync(file, img.Path);
         await imagesServices.InsertAsync(img);
