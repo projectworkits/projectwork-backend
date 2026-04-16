@@ -14,10 +14,10 @@ public static class ImagesEndpoints
         [FromForm] string originalTitle,
         [FromForm] short year,
         [FromForm] string place,
-        [FromForm] string description,
+        [FromForm] string? description,
         [FromForm] string state,
         [FromForm] decimal price,
-        [FromForm] int bookedBy
+        [FromForm] int? bookedBy
     );
 
     public static void AddImagesEndpoints(this IEndpointRouteBuilder route)
