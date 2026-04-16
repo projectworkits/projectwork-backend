@@ -84,7 +84,7 @@ public class ImagesServices
             INSERT INTO public.photos
                 (title, original_title, year, place, path, description, state, price, booked_by)
             VALUES
-                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy)
+                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, photo_state, @Price, @BookedBy)
             RETURNING photo_id;
             """;
 
