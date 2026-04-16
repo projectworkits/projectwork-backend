@@ -8,7 +8,7 @@ public static class AuthEndpoints
     record LoginRequest(string Username, string Password);
     public static void AddAuthenticationEndpoints(this IEndpointRouteBuilder route)
     {
-        var group = route.MapGroup("/api/auth");
+        var group = route.MapGroup("/api/auth").WithName("api authentication");
 
         group.MapGet("/refresh", async Task<Results<Ok, UnauthorizedHttpResult>> (HttpContext context) =>
         {
