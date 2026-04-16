@@ -9,18 +9,6 @@ public static class ImagesEndpoints
     {
         var group = route.MapGroup("/api/images");
 
-        group.AddEndpointFilter(async (context, next) =>
-        {
-            var authService = context.HttpContext.RequestServices.GetRequiredService<Authentication.Authentication>();
-            var request = context.HttpContext.Request;
-
-            var result = await authService.VerifyAccessToken(context.HttpContext);
-            if (result.Result is not Ok)
-                return result.Result;
-
-            return await next(context);
-        }).RequireAuthorization();
-
         group.MapGet("/", GetImagesAsync);
         group.MapGet("/{id:int}", GetImageByIdAsync);
 

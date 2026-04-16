@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Dapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using projectWork.Authentication;
+using projectWork.Models;
 using projectWork.Services;
 
 namespace projectWork.Endpoints;
@@ -10,6 +12,13 @@ public static class UsersEndpoints
     record RegisterRequest(string Username, string Password, string Email);
     public static void AddUsersEndpoints(this IEndpointRouteBuilder route)
     {
+        /* per prendere l'idUser da una richiesta
+           var userId = context.User.FindFirst("userId")?.Value;
+
+            if (userId is null)
+                return TypedResults.Unauthorized();
+        */
+
         var group = route.MapGroup("/api/users");
 
         group.MapPost("/register", async Task<Results<Ok, BadRequest>> ([FromBody] RegisterRequest request, HttpContext context) =>

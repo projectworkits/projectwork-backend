@@ -20,36 +20,6 @@ public class Authentication
         _jwtSecret = configuration["jwtSecret"];
         _passwordServices = passwordServices;
     }
-    // ======================================================================= Verify access token
-    public async Task<Results<Ok<User>, UnauthorizedHttpResult>> VerifyAccessToken(HttpContext context)
-    {
-        var userId = context.User.FindFirst("userId")?.Value;
-
-        if(userId is null)
-            return TypedResults.Unauthorized();
-
-        //ora con l'id dello user, fai quello che devi
-        var connection = new Npgsql.NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
-
-        string query = """
-            SELECT
-                user_id AS id,
-                username,
-                password,
-                email,
-                verified,
-                admin,
-                collaborator
-            FROM users
-            WHERE
-                user_id = @userId
-            """;
-
-        var user = await connection.QueryFirstAsync<User>(query, new { userId = int.Parse(userId) });
-
-        return TypedResults.Ok(user);
-    }
 
     // ======================================================================= Verify Refresh token
     public async Task<Results<Ok, UnauthorizedHttpResult>> VerifyRefreshToken(HttpContext context)
