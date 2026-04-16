@@ -25,7 +25,7 @@ public class ImagesServices
                 year,
                 place,
                 path
-            FROM public.images;
+            FROM public.photos;
             """;
 
         return await connection.QueryAsync<Image>(query);
@@ -45,7 +45,7 @@ public class ImagesServices
                 year,
                 place,
                 path
-            FROM public.images
+            FROM public.photos
             WHERE
                 image_id = @Id;
             """;
@@ -59,7 +59,7 @@ public class ImagesServices
         await connection.OpenAsync();
 
         string query = """
-            INSERT INTO public.images
+            INSERT INTO public.photos
                 (title, original_title, year, place, path)
             VALUES
                 (@Title, @OriginalTitle, @Year, @Place, @Path)
@@ -75,7 +75,7 @@ public class ImagesServices
         await connection.OpenAsync();
 
         string query = """
-            UPDATE public.images
+            UPDATE public.photos
             SET
                 title = @Title,
                 original_title = @OriginalTitle,
@@ -95,7 +95,7 @@ public class ImagesServices
         await connection.OpenAsync();
 
         string query = """
-            DELETE FROM public.images
+            DELETE FROM public.photos
             WHERE image_id = @Id;
             """;
 

@@ -7,7 +7,7 @@ public static class ImagesEndpoints
 {
     public static void AddImagesEndpoints(this IEndpointRouteBuilder route)
     {
-        var group = route.MapGroup("/api/images");
+        var group = route.MapGroup("/api/photos");
 
         group.MapGet("/", GetImagesAsync);
         group.MapGet("/{id:int}", GetImageByIdAsync);
