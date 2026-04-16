@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using projectWork.Services;
+using projectWork.Models;
 
 namespace projectWork.Endpoints;
 
@@ -17,6 +18,9 @@ public static class ImagesEndpoints
         group.MapPut("/", UpdateImageAsync);
 
         group.MapDelete("/{id:int}", DeleteImageAsync);
+
+        // upload immagini
+        route.MapPost("/api/upload", Upload).WithTags("uploadImmagini");
     }
 
     public static async Task<Ok<IEnumerable<Models.Image>>> GetImagesAsync(ImagesServices imagesServices)
@@ -58,5 +62,20 @@ public static class ImagesEndpoints
 
         await imagesServices.DeleteAsync(id);
         return TypedResults.NoContent();
+    }
+
+    // =============================================================================== Upload immagini
+
+    public static async Task<Results<Ok, BadRequest<string>>> Upload(ImagesServices imagesServices, HttpRequest request)
+    {
+        var form = await request.ReadFormAsync();
+        var file = form.Files.GetFile("photo");
+
+        if (file == null || file.Length == 0)
+            return TypedResults.BadRequest("Nessun file caricato");
+
+        await imagesServices.UploadAsync(request);
+
+        return TypedResults.Ok();
     }
 }
