@@ -20,7 +20,7 @@ public static class ImagesEndpoints
         group.MapDelete("/{id:int}", DeleteImageAsync);
 
         // upload immagini
-        route.MapPost("/api/upload", Upload).WithTags("uploadImmagini");
+        route.MapPost("/api/upload", Upload).Accepts<IFormFile>("multipart/form-data").WithTags("uploadImmagini");
     }
 
     public static async Task<Ok<IEnumerable<Models.Image>>> GetImagesAsync(ImagesServices imagesServices)
