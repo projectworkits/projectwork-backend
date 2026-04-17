@@ -68,7 +68,7 @@ public static class UsersEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapDelete("/user/{id:int}", async Task<Results<NoContent, UnauthorizedHttpResult, NotFound>> (UsersServices usersServices, int id) =>
+        group.MapDelete("/user/{id:int}", async Task<Results<NoContent, UnauthorizedHttpResult, NotFound>> (UsersServices usersServices, HttpContext context, int id) =>
         {
             //potrebbe richiedere di essere collaboratori o admin
 
@@ -79,6 +79,9 @@ public static class UsersEndpoints
                 return TypedResults.Unauthorized();
 
             await usersServices.DeleteUser(id);
+
+            context.Response.Cookies.Delete("AccessToken");
+            context.Response.Cookies.Delete("RefreshToken");
 
             return TypedResults.NoContent();
 
