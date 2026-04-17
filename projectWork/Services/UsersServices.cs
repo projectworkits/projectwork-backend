@@ -33,7 +33,15 @@ public class UsersServices
         await connection.OpenAsync();
 
         string query = """
-            SELECT *
+            SELECT
+                user_id as id,
+                username,
+                password_salt,
+                password_hash,
+                email,
+                verified,
+                admin,
+                collaborator
             FROM users
             WHERE
                 user_id = @userId;
@@ -48,7 +56,15 @@ public class UsersServices
         await connection.OpenAsync();
 
         string query = """
-            SELECT *
+            SELECT
+                user_id as id,
+                username,
+                password_salt,
+                password_hash,
+                email,
+                verified,
+                admin,
+                collaborator
             FROM users;
             """;
 
