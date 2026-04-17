@@ -63,7 +63,7 @@ public class Authentication
             JOIN users u ON s.user_id = u.user_id
             WHERE 
                 token = @refreshToken AND
-                NOW() < s.expires_at;
+                NOW() < s.expires;
             """;
 
         return await connection.QueryFirstOrDefaultAsync<int?>(query, new { refreshToken = base64Token });
