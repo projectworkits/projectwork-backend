@@ -39,14 +39,14 @@ public static class UsersEndpoints
             return TypedResults.Ok(user);
         }).RequireAuthorization().WithName("get self");
 
-        group.MapGet("/users", async Task<Ok<IEnumerable<User>>> (UsersServices usersServices) =>
+        group.MapGet("/", async Task<Ok<IEnumerable<User>>> (UsersServices usersServices) =>
         {
             //potrebbe richiedere di essere collaboratori o admin
 
             return TypedResults.Ok(await usersServices.GetList());
         }).RequireAuthorization();
 
-        group.MapGet("/user/{id:int}", async Task<Results<Ok<User>, NotFound>> (UsersServices usersServices, int id) =>
+        group.MapGet("/{id:int}", async Task<Results<Ok<User>, NotFound>> (UsersServices usersServices, int id) =>
         {
             //potrebbe richiedere di essere collaboratori o admin
 
@@ -57,7 +57,7 @@ public static class UsersEndpoints
             return TypedResults.Ok(user);
         }).RequireAuthorization();
 
-        group.MapPut("/user", async Task<Results<NoContent, NotFound>> (UsersServices usersServices, User user) =>
+        group.MapPut("/", async Task<Results<NoContent, NotFound>> (UsersServices usersServices, User user) =>
         {
             //potrebbe richiedere di essere collaboratori o admin
             
@@ -68,7 +68,7 @@ public static class UsersEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapDelete("/user/{id:int}", async Task<Results<NoContent, UnauthorizedHttpResult, NotFound>> (UsersServices usersServices, HttpContext context, int id) =>
+        group.MapDelete("/{id:int}", async Task<Results<NoContent, UnauthorizedHttpResult, NotFound>> (UsersServices usersServices, HttpContext context, int id) =>
         {
             //potrebbe richiedere di essere collaboratori o admin
 
