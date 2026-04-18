@@ -27,14 +27,13 @@ public static class ImagesEndpoints
         group.MapGet("/", GetImagesAsync);
         group.MapGet("/{id:int}", GetImageByIdAsync);
 
-        group.MapPost("/", CreateImageAsync);
+        group.MapPut("/", UpdateImageAsync).RequireAuthorization();
 
-        group.MapPut("/", UpdateImageAsync);
-
-        group.MapDelete("/{id:int}", DeleteImageAsync);
+        group.MapDelete("/{id:int}", DeleteImageAsync).RequireAuthorization();
 
         // upload immagini
-        route.MapPost("/api/upload", Upload).Accepts<ImgUpload>("multipart/form-data").WithTags("uploadImmagini").DisableAntiforgery();
+        group.MapPost("/upload", Upload).Accepts<ImgUpload>("multipart/form-data").RequireAuthorization()
+                                            .WithTags("uploadImmagini").DisableAntiforgery();
     }
 
     public static async Task<Ok<IEnumerable<Models.Image>>> GetImagesAsync(ImagesServices imagesServices)
@@ -50,14 +49,6 @@ public static class ImagesEndpoints
             return TypedResults.NotFound();
 
         return TypedResults.Ok(image);
-    }
-
-    public static async Task<Created<Models.Image>> CreateImageAsync(ImagesServices imagesServices, Models.Image image)
-    {
-        var id = await imagesServices.InsertAsync(image);
-
-        image.Id = id;
-        return TypedResults.Created("/images/"+id, image);
     }
 
     public static async Task<Results<NoContent, NotFound>> UpdateImageAsync(ImagesServices imagesServices, Models.Image image)
@@ -81,7 +72,7 @@ public static class ImagesEndpoints
     // =============================================================================== Upload immagini
 
     // necessario [FromForm] nel parametro, altrimenti legge come json
-    public static async Task<Results<Ok, BadRequest<string>>> Upload(ImagesServices imagesServices, [FromForm] ImgUpload request)
+    public static async Task<Results<Created, BadRequest<string>>> Upload(ImagesServices imagesServices, [FromForm] ImgUpload request)
     {
         var file = request.photo;
 
@@ -99,10 +90,9 @@ public static class ImagesEndpoints
         img.State = request.state;
         img.Price = request.price;
         img.BookedBy = request.bookedBy;
+        
+        await imagesServices.InsertAsync(img, file);
 
-        await imagesServices.UploadAsync(file, img.Path);
-        await imagesServices.InsertAsync(img);
-
-        return TypedResults.Ok();
+        return TypedResults.Created();
     }
 }
