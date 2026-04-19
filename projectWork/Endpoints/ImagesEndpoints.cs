@@ -83,8 +83,7 @@ public record InsertImage(
     string place,
     string? description,
     PhotoState state,
-    decimal price,
-    int? bookedBy
+    decimal price
 )
 {
     public Image ToEntity() => new()
@@ -96,7 +95,6 @@ public record InsertImage(
         Path = $"/frontend/photos/{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}",
         Description = description,
         State = state,
-        Price = price,
-        BookedBy = bookedBy
+        Price = price
     };
 };
