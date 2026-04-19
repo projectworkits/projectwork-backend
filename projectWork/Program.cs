@@ -58,6 +58,7 @@ app.UseAuthorization();
 app.AddAuthenticationEndpoints();
 app.AddUsersEndpoints();
 app.AddImagesEndpoints();
+app.AddProductsEndpoints();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
