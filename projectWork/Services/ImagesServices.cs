@@ -58,10 +58,10 @@ public class ImagesServices
                 photo_id = @Id;
             """;
 
-        return await connection.QuerySingleOrDefaultAsync<Image>(query, new { Id = id });
+        return await connection.QuerySingleOrDefaultAsync<Image?>(query, new { Id = id });
     }
 
-    public async Task<int> InsertAsync(Image image, IFormFile file)
+    public async Task InsertAsync(Image image, IFormFile file)
     {
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -73,16 +73,13 @@ public class ImagesServices
             INSERT INTO public.photos
                 (title, original_title, year, place, path, description, state, price, booked_by)
             VALUES
-                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy)
-            RETURNING photo_id;
+                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy);
             """;
-        int photoId = await connection.QuerySingleAsync<int>(query, parameters);
+        await connection.ExecuteAsync(query, parameters);
 
         //inserimento file
         using var stream = new FileStream(image.Path, FileMode.Create);
         await file.CopyToAsync(stream);
-
-        return photoId;
     }
 
     public async Task UpdateAsync(Image image)

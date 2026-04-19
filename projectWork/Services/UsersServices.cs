@@ -12,22 +12,28 @@ public class UsersServices
         _connectionString = configuration.GetConnectionString("db");
     }
 
-    public async Task RegisterUser(string username, string password_hash, string password_salt, string email)
+    public async Task<IEnumerable<User>> GetListAsync()
     {
         using var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
         string query = """
-            INSERT INTO users
-                (username, password_hash, password_salt, email)
-            VALUES
-                (@username, @password_hash, @password_salt, @email);
+            SELECT
+                user_id as id,
+                username,
+                password_salt,
+                password_hash,
+                email,
+                verified,
+                admin,
+                collaborator
+            FROM users;
             """;
 
-        await connection.ExecuteAsync(query, new {username, password_hash, password_salt, email});
+        return await connection.QueryAsync<User>(query);
     }
 
-    public async Task<User> GetById(int userId)
+    public async Task<User> GetByIdAsync(int userId)
     {
         using var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -50,28 +56,22 @@ public class UsersServices
         return (await connection.QueryFirstOrDefaultAsync<User>(query, new { userId }))!;
     }
 
-    public async Task<IEnumerable<User>> GetList()
+    public async Task InsertAsync(string username, string password_hash, string password_salt, string email)
     {
         using var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
         string query = """
-            SELECT
-                user_id as id,
-                username,
-                password_salt,
-                password_hash,
-                email,
-                verified,
-                admin,
-                collaborator
-            FROM users;
+            INSERT INTO users
+                (username, password_hash, password_salt, email)
+            VALUES
+                (@username, @password_hash, @password_salt, @email);
             """;
 
-        return await connection.QueryAsync<User>(query);
+        await connection.ExecuteAsync(query, new { username, password_hash, password_salt, email });
     }
 
-    public async Task UpdateUser(User user)
+    public async Task UpdateAsync(User user)
     {
         using var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -93,7 +93,7 @@ public class UsersServices
         await connection.ExecuteAsync(query, user);
     }
 
-    public async Task<bool> DeleteUser(int userId)
+    public async Task<bool> DeleteAsync(int userId)
     {
         using var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
