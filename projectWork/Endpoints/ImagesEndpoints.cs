@@ -1,108 +1,100 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using projectWork.Services;
-using projectWork.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
+using projectWork.Models;
+using projectWork.Services;
+using Image = projectWork.Models.Image;
 
 namespace projectWork.Endpoints;
 
 public static class ImagesEndpoints
 {
-    public record ImgUpload(
-        [FromForm] IFormFile photo,
-        [FromForm] string title,
-        [FromForm] string originalTitle,
-        [FromForm] short year,
-        [FromForm] string place,
-        [FromForm] string? description,
-        [FromForm] PhotoState state,
-        [FromForm] decimal price,
-        [FromForm] int? bookedBy
-    );
-
     public static void AddImagesEndpoints(this IEndpointRouteBuilder route)
     {
         var group = route.MapGroup("/api/photos").WithTags("api photos");
 
-        group.MapGet("/", GetImagesAsync);
-        group.MapGet("/{id:int}", GetImageByIdAsync);
+        group.MapGet("/", async Task<Ok<IEnumerable<Image>>> (ImagesServices imagesServices) =>
+        {
+            var list = await imagesServices.GetListAsync();
+            return TypedResults.Ok(list);
+        });
 
-        group.MapPost("/", CreateImageAsync);
+        group.MapGet("/{id:int}", async Task<Results<Ok<Image>, NotFound>> (ImagesServices imagesServices, int id) =>
+        {
+            var image = await imagesServices.GetByIdAsync(id);
 
-        group.MapPut("/", UpdateImageAsync);
+            if (image is null)
+                return TypedResults.NotFound();
 
-        group.MapDelete("/{id:int}", DeleteImageAsync);
+            return TypedResults.Ok(image);
+        });
 
         // upload immagini
-        route.MapPost("/api/upload", Upload).Accepts<ImgUpload>("multipart/form-data").WithTags("uploadImmagini").DisableAntiforgery();
-    }
+        // necessario [FromForm] nel parametro
+        group.MapPost("/upload", async Task <Results<Created, BadRequest<string>>> (ImagesServices imagesServices, [FromForm] InsertImage imageRecord) =>
+        {
+            //potrebbe richiedere di essere collaboratori o admin
 
-    public static async Task<Ok<IEnumerable<Models.Image>>> GetImagesAsync(ImagesServices imagesServices)
-    {
-        var list = await imagesServices.GetListAsync();
-        return TypedResults.Ok(list);
-    }
+            var file = imageRecord.photo;
 
-    public static async Task<Results<Ok<Models.Image>, NotFound>> GetImageByIdAsync(ImagesServices imagesServices, int id)
-    {
-        var image = await imagesServices.GetByIdAsync(id);
-        if (image is null)
-            return TypedResults.NotFound();
+            if (file == null || file.Length == 0)
+                return TypedResults.BadRequest("Nessun file caricato");
 
-        return TypedResults.Ok(image);
-    }
+            // fare controllo input dentro il record in caso
+            Image img = imageRecord.ToEntity();
 
-    public static async Task<Created<Models.Image>> CreateImageAsync(ImagesServices imagesServices, Models.Image image)
-    {
-        var id = await imagesServices.InsertAsync(image);
+            await imagesServices.InsertAsync(img, file);
 
-        image.Id = id;
-        return TypedResults.Created("/images/"+id, image);
-    }
+            return TypedResults.Created();
+        }).Accepts<InsertImage>("multipart/form-data").RequireAuthorization().WithName("upload Immagini").DisableAntiforgery();
 
-    public static async Task<Results<NoContent, NotFound>> UpdateImageAsync(ImagesServices imagesServices, Models.Image image)
-    {
-        if (await imagesServices.GetByIdAsync(image.Id) is null)
-            return TypedResults.NotFound();
+        group.MapPut("/", async Task<Results<NoContent, NotFound>> (ImagesServices imagesServices, Image image) =>
+        {
+            //potrebbe richiedere di essere collaboratori o admin
 
-        await imagesServices.UpdateAsync(image);
-        return TypedResults.NoContent();
-    }
+            if (await imagesServices.GetByIdAsync(image.Id) is null)
+                return TypedResults.NotFound();
 
-    public static async Task<Results<NoContent, NotFound>> DeleteImageAsync(ImagesServices imagesServices, int id)
-    {
-        if (await imagesServices.GetByIdAsync(id) is null)
-            return TypedResults.NotFound();
+            await imagesServices.UpdateAsync(image);
 
-        await imagesServices.DeleteAsync(id);
-        return TypedResults.NoContent();
-    }
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
 
-    // =============================================================================== Upload immagini
+        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound>> (ImagesServices imagesServices, int id) =>
+        {
+            //potrebbe richiedere di essere collaboratori o admin
 
-    // necessario [FromForm] nel parametro, altrimenti legge come json
-    public static async Task<Results<Ok, BadRequest<string>>> Upload(ImagesServices imagesServices, [FromForm] ImgUpload request)
-    {
-        var file = request.photo;
+            if (await imagesServices.GetByIdAsync(id) is null)
+                return TypedResults.NotFound();
 
-        if (file == null || file.Length == 0)
-            return TypedResults.BadRequest("Nessun file caricato");
+            await imagesServices.DeleteAsync(id);
 
-        Image img = new();
-
-        img.Title = request.title;
-        img.OriginalTitle = request.originalTitle;
-        img.Year = request.year;
-        img.Place = request.place;
-        img.Path = $"/frontend/photos/{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-        img.Description = request.description;
-        img.State = request.state;
-        img.Price = request.price;
-        img.BookedBy = request.bookedBy;
-
-        await imagesServices.UploadAsync(file, img.Path);
-        await imagesServices.InsertAsync(img);
-
-        return TypedResults.Ok();
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
     }
 }
+
+// ======================================================================== record necessari alle richieste
+
+public record InsertImage(
+    IFormFile photo,
+    string title,
+    string originalTitle,
+    short year,
+    string place,
+    string? description,
+    PhotoState state,
+    decimal price
+)
+{
+    public Image ToEntity() => new()
+    {
+        Title = title,
+        OriginalTitle = originalTitle,
+        Year = year,
+        Place = place,
+        Path = $"/frontend/photos/{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}",
+        Description = description,
+        State = state,
+        Price = price
+    };
+};

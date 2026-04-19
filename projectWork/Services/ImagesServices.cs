@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using projectWork.Models;
+using Image = projectWork.Models.Image;
 
 namespace projectWork.Services;
 
@@ -58,10 +58,10 @@ public class ImagesServices
                 photo_id = @Id;
             """;
 
-        return await connection.QuerySingleOrDefaultAsync<Image>(query, new { Id = id });
+        return await connection.QuerySingleOrDefaultAsync<Image?>(query, new { Id = id });
     }
 
-    public async Task<int> InsertAsync(Image image)
+    public async Task InsertAsync(Image image, IFormFile file)
     {
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -73,14 +73,19 @@ public class ImagesServices
             INSERT INTO public.photos
                 (title, original_title, year, place, path, description, state, price, booked_by)
             VALUES
-                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy)
-            RETURNING photo_id;
+                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy);
             """;
-        return await connection.QuerySingleAsync<int>(query, parameters);
+        await connection.ExecuteAsync(query, parameters);
+
+        //inserimento file
+        using var stream = new FileStream(image.Path, FileMode.Create);
+        await file.CopyToAsync(stream);
     }
 
     public async Task UpdateAsync(Image image)
     {
+        // potrebbe dover riscrivere anche l'immagine
+
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
@@ -113,16 +118,18 @@ public class ImagesServices
 
         string query = """
             DELETE FROM public.photos
-            WHERE photo_id = @Id;
+            WHERE
+                photo_id = @Id
+            RETURNING
+                path;
             """;
 
-        await connection.ExecuteAsync(query, new { Id = id });
-    }
+        // esistenza del record già confermata dall'endpoint
 
-    // =============================================================================== Upload immagini
-    public async Task UploadAsync(IFormFile file, string path)
-    {
-        using var stream = new FileStream(path, FileMode.Create);
-        await file.CopyToAsync(stream);
+        string path = (await connection.ExecuteScalarAsync<string>(query, new { Id = id }))!;
+
+        //cancellazione del file
+        if(File.Exists(path))
+            File.Delete(path);
     }
 }

@@ -16,6 +16,7 @@ builder.Services.AddScoped<PasswordServices>();
 
 builder.Services.AddScoped<ImagesServices>();
 builder.Services.AddScoped<UsersServices>();
+builder.Services.AddScoped<ProductsServices>();
 
 var keyBytes = Encoding.UTF8.GetBytes(builder.Configuration["jwtSecret"] ?? "deve-essere-di-almeno-32-caratteri");
 
@@ -57,6 +58,7 @@ app.UseAuthorization();
 app.AddAuthenticationEndpoints();
 app.AddUsersEndpoints();
 app.AddImagesEndpoints();
+app.AddProductsEndpoints();
 
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
