@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using projectWork.Models;
 using projectWork.Services;
+using System.Security.Claims;
 using Image = projectWork.Models.Image;
 
 namespace projectWork.Endpoints;
@@ -30,9 +31,18 @@ public static class ImagesEndpoints
 
         // upload immagini
         // necessario [FromForm] nel parametro
-        group.MapPost("/upload", async Task <Results<Created, BadRequest<string>>> (ImagesServices imagesServices, [FromForm] InsertImage imageRecord) =>
+        group.MapPost("/upload", async Task <Results<Created, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ImagesServices imagesServices, UsersServices usersServices, HttpContext context, [FromForm] InsertImage imageRecord) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             var file = imageRecord.photo;
 
@@ -47,9 +57,18 @@ public static class ImagesEndpoints
             return TypedResults.Created();
         }).Accepts<InsertImage>("multipart/form-data").RequireAuthorization().WithName("upload Immagini").DisableAntiforgery();
 
-        group.MapPut("/", async Task<Results<NoContent, NotFound>> (ImagesServices imagesServices, Image image) =>
+        group.MapPut("/", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ImagesServices imagesServices, UsersServices usersServices, HttpContext context, Image image) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             if (await imagesServices.GetByIdAsync(image.Id) is null)
                 return TypedResults.NotFound();
@@ -59,9 +78,18 @@ public static class ImagesEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound>> (ImagesServices imagesServices, int id) =>
+        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ImagesServices imagesServices, UsersServices usersServices, HttpContext context, int id) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             if (await imagesServices.GetByIdAsync(id) is null)
                 return TypedResults.NotFound();

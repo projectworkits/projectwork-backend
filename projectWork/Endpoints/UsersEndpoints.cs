@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.HttpResults;
 using projectWork.Authentication;
 using projectWork.Models;
 using projectWork.Services;
+using System.Security.Claims;
 
 namespace projectWork.Endpoints;
 
@@ -12,9 +13,10 @@ public static class UsersEndpoints
     {
         var group = route.MapGroup("/api/users").WithTags("api users");
 
-        group.MapGet("/user", async Task<Results<Ok<User>, UnauthorizedHttpResult>> (HttpContext context, UsersServices usersServices) =>
+        group.MapGet("/user", async Task<Results<Ok<User>, UnauthorizedHttpResult>>
+            (HttpContext context, UsersServices usersServices) =>
         {
-            var stringUserId = context.User.FindFirst("userId")?.Value;
+            var stringUserId = context.User.FindFirstValue("userId");
 
             if (!int.TryParse(stringUserId, out int userId))
                 return TypedResults.Unauthorized();
@@ -24,16 +26,34 @@ public static class UsersEndpoints
             return TypedResults.Ok(user);
         }).RequireAuthorization().WithName("get self");
 
-        group.MapGet("/", async Task<Ok<IEnumerable<User>>> (UsersServices usersServices) =>
+        group.MapGet("/", async Task<Results<Ok<IEnumerable<User>>, ForbidHttpResult, UnauthorizedHttpResult>>
+            (UsersServices usersServices, HttpContext context) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             return TypedResults.Ok(await usersServices.GetListAsync());
         }).RequireAuthorization();
 
-        group.MapGet("/{id:int}", async Task<Results<Ok<User>, NotFound>> (UsersServices usersServices, int id) =>
+        group.MapGet("/{id:int}", async Task<Results<Ok<User>, NotFound, ForbidHttpResult, UnauthorizedHttpResult>>
+            (UsersServices usersServices, HttpContext context, int id) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             User user = await usersServices.GetByIdAsync(id);
             if(user is null)
@@ -42,7 +62,8 @@ public static class UsersEndpoints
             return TypedResults.Ok(user);
         }).RequireAuthorization();
 
-        group.MapPost("/register", async Task<Results<Created, BadRequest>> (RegisterRequest request, PasswordServices passwordServices, UsersServices usersServices) =>
+        group.MapPost("/register", async Task<Results<Created, BadRequest>>
+            (RegisterRequest request, PasswordServices passwordServices, UsersServices usersServices) =>
         {
             var username = request.Username;
             var password = request.Password;
@@ -58,10 +79,19 @@ public static class UsersEndpoints
             return TypedResults.Created();
         });
 
-        group.MapPut("/", async Task<Results<NoContent, NotFound>> (UsersServices usersServices, User user) =>
+        group.MapPut("/", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (UsersServices usersServices, HttpContext context, User user) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
-            
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
+
             if (await usersServices.GetByIdAsync(user.Id) is null)
                 return TypedResults.NotFound();
 
@@ -69,9 +99,18 @@ public static class UsersEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapDelete("/{id:int}", async Task<Results<NoContent, UnauthorizedHttpResult, NotFound>> (UsersServices usersServices, HttpContext context, int id) =>
+        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (UsersServices usersServices, HttpContext context, int id) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             if (await usersServices.GetByIdAsync(id) is null)
                 return TypedResults.NotFound();
@@ -83,6 +122,8 @@ public static class UsersEndpoints
 
             context.Response.Cookies.Delete("AccessToken");
             context.Response.Cookies.Delete("RefreshToken");
+
+            await usersServices.ExpireRefreshToken(id);
 
             return TypedResults.NoContent();
 

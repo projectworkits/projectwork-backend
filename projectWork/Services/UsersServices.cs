@@ -139,4 +139,21 @@ public class UsersServices
 
         return await connection.ExecuteScalarAsync<bool>(query, new { userId });
     }
+
+    // ======================================================================= expire refresh token
+    public async Task ExpireRefreshToken(int userId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.sessions
+            SET
+                expired = true
+            WHERE
+                user_id = @userId
+            """;
+
+        await connection.ExecuteAsync(query, new { userId });
+    }
 }

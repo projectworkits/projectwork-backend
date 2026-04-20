@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using projectWork.Models;
 using projectWork.Services;
-using System.Xml.Linq;
+using System.Security.Claims;
 
 namespace projectWork.Endpoints;
 
@@ -17,7 +16,8 @@ public static class ProductsEndpoints
             return TypedResults.Ok(await productsServices.GetListAsync());
         });
 
-        group.MapGet("/{id:int}", async Task<Results<Ok<Product>, NotFound>> (ProductsServices productsServices, int id) =>
+        group.MapGet("/{id:int}", async Task<Results<Ok<Product>, NotFound>> 
+            (ProductsServices productsServices, int id) =>
         {
             var product = await productsServices.GetByIdAsync(id);
 
@@ -27,9 +27,18 @@ public static class ProductsEndpoints
             return TypedResults.Ok(product);
         });
 
-        group.MapPost("/", async Task<Results<Created, BadRequest>> (ProductsServices productsServices, InsertProduct productRecord) =>
+        group.MapPost("/", async Task<Results<Created, BadRequest, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ProductsServices productsServices, UsersServices usersServices, HttpContext context, InsertProduct productRecord) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             // fare controllo input dentro il record in caso
             var product = productRecord.ToEntity();
@@ -40,9 +49,18 @@ public static class ProductsEndpoints
                 
         }).RequireAuthorization();
 
-        group.MapPut("/", async Task<Results<NoContent, NotFound>> (ProductsServices productsServices, Product product) =>
+        group.MapPut("/", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ProductsServices productsServices, UsersServices usersServices, HttpContext context, Product product) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             if (await productsServices.GetByIdAsync(product.Id) is null)
                 return TypedResults.NotFound();
@@ -52,9 +70,18 @@ public static class ProductsEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound>> (ProductsServices productsServices, int id) =>
+        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ProductsServices productsServices, UsersServices usersServices, HttpContext context, int id) =>
         {
-            //potrebbe richiedere di essere collaboratori o admin
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
 
             if (await productsServices.GetByIdAsync(id) is null)
                 return TypedResults.NotFound();
