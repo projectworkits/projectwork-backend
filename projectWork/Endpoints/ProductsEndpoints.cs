@@ -93,7 +93,41 @@ public static class ProductsEndpoints
 
         // ======================================================================== api extra
 
+        group.MapPost("sell/{productId:int}/{quantity:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (UsersServices usersServices, ProductsServices productsServices, HttpContext context, int productId, int quantity) =>
+        {
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
 
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
+
+            await productsServices.SetSoldProduct(productId, quantity);
+
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
+
+        group.MapPost("addAvailable/{productId:int}/{quantity:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (UsersServices usersServices, ProductsServices productsServices, HttpContext context, int productId, int quantity) =>
+        {
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
+
+            await productsServices.AddAvailableProduct(productId, quantity);
+
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
     }
 }
 

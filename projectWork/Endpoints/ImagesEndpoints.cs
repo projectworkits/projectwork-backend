@@ -103,7 +103,7 @@ public static class ImagesEndpoints
         // ======================================================================== api extra
 
         //filtro foto per stato
-        group.MapGet("/filter/{state:string}",  async Task<Ok<IEnumerable<Image>>> (ImagesServices imagesServices, string state) =>
+        group.MapGet("/filter/{state}",  async Task<Ok<IEnumerable<Image>>> (ImagesServices imagesServices, string state) =>
         {
             var list = await imagesServices.GetListFilterAsync(state);
             return TypedResults.Ok(list);
