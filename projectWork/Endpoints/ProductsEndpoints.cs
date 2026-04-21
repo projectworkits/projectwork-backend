@@ -90,6 +90,10 @@ public static class ProductsEndpoints
 
             return TypedResults.NoContent();
         }).RequireAuthorization();
+
+        // ======================================================================== api extra
+
+
     }
 }
 

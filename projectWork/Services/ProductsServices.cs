@@ -24,7 +24,6 @@ public class ProductsServices
                 description,
                 price,
                 available,
-                booked,
                 sold
             FROM public.products;
             """;
@@ -44,14 +43,13 @@ public class ProductsServices
                 description,
                 price,
                 available,
-                booked,
                 sold
             FROM public.products
             WHERE
                 product_id = @productId;
             """;
 
-        return await connection.QueryFirstOrDefaultAsync<Product?>(query, new {productId});
+        return await connection.QueryFirstOrDefaultAsync<Product?>(query, new { productId });
     }
 
     public async Task InsertAsync(Product product)
@@ -61,9 +59,9 @@ public class ProductsServices
 
         string query = """
             INSERT INTO public.products
-                (name, description, price, available, booked, sold)
+                (name, description, price, available, sold)
             VALUES
-                (@name, @description, @price, @available, @booked, @sold);
+                (@name, @description, @price, @available, @sold);
             """;
 
         await connection.ExecuteAsync(query, product);
@@ -81,7 +79,6 @@ public class ProductsServices
                 description = @description,
                 price = @price,
                 available = @available,
-                booked = @booked,
                 sold = @sold
             WHERE
                 product_id = @id;
@@ -101,6 +98,41 @@ public class ProductsServices
                 product_id = @productId;
             """;
 
-        await connection.ExecuteAsync(query, new {productId});
+        await connection.ExecuteAsync(query, new { productId });
+    }
+
+    // ======================================================================= servizi api extra
+
+    public async Task SetSoldProduct(int productId, int quantity)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.products
+            SET
+                available = available - @quantity,
+                sold = sold + @quantity
+            WHERE
+                product_id = @productId;
+            """;
+
+        await connection.ExecuteAsync(query, new { productId, quantity });
+    }
+
+    public async Task AddAvailableProduct(int productId, int quantity)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.products
+            SET
+                available = available + @quantity
+            WHERE
+                product_id = @productId;
+            """;
+
+        await connection.ExecuteAsync(query, new { productId, quantity });
     }
 }
