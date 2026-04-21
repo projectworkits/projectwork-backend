@@ -99,7 +99,7 @@ public static class UsersEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+        group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult, Ok<string>>>
             (UsersServices usersServices, HttpContext context, int id) =>
         {
             //------------------------- check se admin o collaboratore
@@ -116,7 +116,7 @@ public static class UsersEndpoints
                 return TypedResults.NotFound();
 
             if(await usersServices.IsAdmin(id))
-                return TypedResults.Unauthorized();
+                return TypedResults.Ok("flag{bel tentativo, ma eliminare l'admin non è così facile}");
 
             await usersServices.DeleteAsync(id);
 
