@@ -131,9 +131,13 @@ public static class UsersEndpoints
 
         //============================================================== api extra
 
-        group.MapPost("opCollaborator/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+        group.MapPut("opCollaborator/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
             (UsersServices usersServices, HttpContext context, int id) =>
         {
+            User user = await usersServices.GetByIdAsync(id);
+            if (user is null)
+                return TypedResults.NotFound();
+
             //------------------------- check se admin
             var stringUserId = context.User.FindFirstValue("userId");
 
@@ -149,9 +153,13 @@ public static class UsersEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapPost("deopCollaborator/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+        group.MapPut("deopCollaborator/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
             (UsersServices usersServices, HttpContext context, int id) =>
         {
+            User user = await usersServices.GetByIdAsync(id);
+            if (user is null)
+                return TypedResults.NotFound();
+
             //------------------------- check se admin
             var stringUserId = context.User.FindFirstValue("userId");
 

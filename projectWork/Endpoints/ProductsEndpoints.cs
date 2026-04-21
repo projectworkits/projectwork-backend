@@ -93,7 +93,7 @@ public static class ProductsEndpoints
 
         // ======================================================================== api extra
 
-        group.MapPost("sell/{productId:int}/{quantity:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+        group.MapPut("sell/{productId:int}/{quantity:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
             (UsersServices usersServices, ProductsServices productsServices, HttpContext context, int productId, int quantity) =>
         {
             //------------------------- check se admin o collaboratore
@@ -111,7 +111,7 @@ public static class ProductsEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapPost("addAvailable/{productId:int}/{quantity:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+        group.MapPut("addAvailable/{productId:int}/{quantity:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
             (UsersServices usersServices, ProductsServices productsServices, HttpContext context, int productId, int quantity) =>
         {
             //------------------------- check se admin o collaboratore

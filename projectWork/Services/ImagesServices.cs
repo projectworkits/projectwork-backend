@@ -173,7 +173,7 @@ public class ImagesServices
                 photo_id = @photoId;
             """;
 
-        await connection.QueryAsync<Image>(query, new { userId, photoId });
+        await connection.ExecuteAsync(query, new { userId, photoId });
     }
 
     public async Task<int> GetUserOfBookedImage(int photoId)
@@ -205,7 +205,7 @@ public class ImagesServices
                 photo_id = @photoId;
             """;
 
-        await connection.QueryAsync<Image>(query, new { photoId });
+        await connection.ExecuteAsync(query, new { photoId });
     }
 
     public async Task SetSoldImage(int photoId)

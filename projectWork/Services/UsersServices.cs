@@ -32,7 +32,7 @@ public class UsersServices
         return await connection.QueryAsync<User>(query);
     }
 
-    public async Task<User> GetByIdAsync(int userId)
+    public async Task<User?> GetByIdAsync(int userId)
     {
         using var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
@@ -51,7 +51,7 @@ public class UsersServices
                 user_id = @userId;
             """;
 
-        return (await connection.QueryFirstOrDefaultAsync<User>(query, new { userId }))!;
+        return (await connection.QueryFirstOrDefaultAsync<User?>(query, new { userId }))!;
     }
 
     public async Task InsertAsync(string username, string password_hash, string password_salt, string email)

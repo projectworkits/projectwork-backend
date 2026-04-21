@@ -110,9 +110,13 @@ public static class ImagesEndpoints
         });
 
         // prenotata da qualcuno
-        group.MapPost("/book/{imageId:int}/{userId:int}", async Task<Results<NoContent, NotFound>>
+        group.MapPut("/book/{imageId:int}/{userId:int}", async Task<Results<NoContent, NotFound>>
             (ImagesServices imagesServices, UsersServices usersServices, int imageId, int userId) =>
         {
+            Image image = await imagesServices.GetByIdAsync(imageId);
+            if (image is null)
+                return TypedResults.NotFound();
+
             User user = await usersServices.GetByIdAsync(userId);
             if (user is null)
                 return TypedResults.NotFound();
@@ -122,9 +126,13 @@ public static class ImagesEndpoints
         }).RequireAuthorization();
 
         // annulla prenotazione qualcuno
-        group.MapPost("/unbook/{imageId:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+        group.MapPut("/unbook/{imageId:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
             (ImagesServices imagesServices, UsersServices usersServices, HttpContext context, int imageId) =>
         {
+            Image image = await imagesServices.GetByIdAsync(imageId);
+            if (image is null)
+                return TypedResults.NotFound();
+
             //------------------------- check se admin o collaboratore
             var stringUserId = context.User.FindFirstValue("userId");
 
@@ -150,9 +158,13 @@ public static class ImagesEndpoints
             return TypedResults.NoContent();
         }).RequireAuthorization();
 
-        group.MapPost("/setsold/{imageId:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+        group.MapPut("/setsold/{imageId:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
             (ImagesServices imagesServices, UsersServices usersServices, HttpContext context, int imageId) =>
         {
+            Image image = await imagesServices.GetByIdAsync(imageId);
+            if (image is null)
+                return TypedResults.NotFound();
+
             //------------------------- check se admin o collaboratore
             var stringUserId = context.User.FindFirstValue("userId");
 
