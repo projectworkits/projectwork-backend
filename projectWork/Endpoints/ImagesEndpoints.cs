@@ -188,7 +188,7 @@ public record InsertImage(
     IFormFile photo,
     string title,
     string originalTitle,
-    short year,
+    string date,
     string place,
     string? description,
     PhotoState state,
@@ -199,7 +199,7 @@ public record InsertImage(
     {
         Title = title,
         OriginalTitle = originalTitle,
-        Year = year,
+        Date = date,
         Place = place,
         Path = $"/frontend/photos/{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}",
         Description = description,
