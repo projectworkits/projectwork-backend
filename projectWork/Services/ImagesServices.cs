@@ -22,7 +22,7 @@ public class ImagesServices
                 photo_id AS Id,
                 title,
                 original_title,
-                year,
+                date,
                 place,
                 path,
                 description,
@@ -46,7 +46,7 @@ public class ImagesServices
                 photo_id AS Id,
                 title,
                 original_title,
-                year,
+                date,
                 place,
                 path,
                 description,
@@ -71,9 +71,9 @@ public class ImagesServices
 
         string query = """
             INSERT INTO public.photos
-                (title, original_title, year, place, path, description, state, price, booked_by)
+                (title, original_title, date, place, path, description, state, price, booked_by)
             VALUES
-                (@Title, @OriginalTitle, @Year, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy);
+                (@Title, @OriginalTitle, @date, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy);
             """;
         await connection.ExecuteAsync(query, parameters);
 
@@ -97,7 +97,7 @@ public class ImagesServices
             SET
                 title = @Title,
                 original_title = @OriginalTitle,
-                year = @Year,
+                date = @date,
                 place = @Place,
                 path = @Path,
                 description = @description,
@@ -145,7 +145,7 @@ public class ImagesServices
                 photo_id AS Id,
                 title,
                 original_title,
-                year,
+                date,
                 place,
                 path,
                 description,
