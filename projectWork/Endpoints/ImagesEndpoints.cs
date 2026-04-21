@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using projectWork.Models;
 using projectWork.Services;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Image = projectWork.Models.Image;
 
 namespace projectWork.Endpoints;
@@ -98,6 +99,15 @@ public static class ImagesEndpoints
 
             return TypedResults.NoContent();
         }).RequireAuthorization();
+
+        // ======================================================================== api extra
+
+        //filtro foto per stato
+        group.MapGet("/filter/{state:string}",  async Task<Ok<IEnumerable<Image>>> (ImagesServices imagesServices) =>
+        {
+            var list = await imagesServices.GetListAsync();
+            return TypedResults.Ok(list);
+        });
     }
 }
 

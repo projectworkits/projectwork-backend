@@ -151,7 +151,41 @@ public class UsersServices
             SET
                 expired = true
             WHERE
-                user_id = @userId
+                user_id = @userId;
+            """;
+
+        await connection.ExecuteAsync(query, new { userId });
+    }
+
+    // ======================================================================= servizi api extra
+
+    public async Task OpCollaborator(int userId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.users
+            SET
+                colalborator = true
+            WHERE
+                user_id = @userId;
+            """;
+
+        await connection.ExecuteAsync(query, new { userId });
+    }
+
+    public async Task DeopCollaborator(int userId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.users
+            SET
+                colalborator = false
+            WHERE
+                user_id = @userId;
             """;
 
         await connection.ExecuteAsync(query, new { userId });

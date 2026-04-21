@@ -128,6 +128,44 @@ public static class UsersEndpoints
             return TypedResults.NoContent();
 
         }).RequireAuthorization();
+
+        //============================================================== api extra
+
+        group.MapPost("opCollaborator/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (UsersServices usersServices, HttpContext context, int id) =>
+        {
+            //------------------------- check se admin
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!await usersServices.IsAdmin(userId))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
+
+            await usersServices.OpCollaborator(userId);
+
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
+
+        group.MapPost("deopCollaborator/{id:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (UsersServices usersServices, HttpContext context, int id) =>
+        {
+            //------------------------- check se admin
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!await usersServices.IsAdmin(userId))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
+
+            await usersServices.DeopCollaborator(userId);
+
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
     }
 }
 
