@@ -78,7 +78,7 @@ public class ImagesServices
         await connection.ExecuteAsync(query, parameters);
 
         //inserimento file
-        using var stream = new FileStream(image.Path, FileMode.Create);
+        using var stream = new FileStream("/frontend"+image.Path, FileMode.Create);
         await file.CopyToAsync(stream);
     }
 

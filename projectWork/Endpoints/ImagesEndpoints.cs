@@ -201,7 +201,7 @@ public record InsertImage(
         OriginalTitle = originalTitle,
         Date = date,
         Place = place,
-        Path = $"/frontend/photos/{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}",
+        Path = $"/photos/{Guid.NewGuid()}{Path.GetExtension(photo.FileName)}",
         Description = description,
         State = state,
         Price = price
