@@ -103,11 +103,70 @@ public static class ImagesEndpoints
         // ======================================================================== api extra
 
         //filtro foto per stato
-        group.MapGet("/filter/{state:string}",  async Task<Ok<IEnumerable<Image>>> (ImagesServices imagesServices) =>
+        group.MapGet("/filter/{state:string}",  async Task<Ok<IEnumerable<Image>>> (ImagesServices imagesServices, string state) =>
         {
-            var list = await imagesServices.GetListAsync();
+            var list = await imagesServices.GetListFilterAsync(state);
             return TypedResults.Ok(list);
         });
+
+        // prenotata da qualcuno
+        group.MapPost("/book/{imageId:int}/{userId:int}", async Task<Results<NoContent, NotFound>>
+            (ImagesServices imagesServices, UsersServices usersServices, int imageId, int userId) =>
+        {
+            User user = await usersServices.GetByIdAsync(userId);
+            if (user is null)
+                return TypedResults.NotFound();
+
+            await imagesServices.BookImage(imageId, userId);
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
+
+        // annulla prenotazione qualcuno
+        group.MapPost("/unbook/{imageId:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ImagesServices imagesServices, UsersServices usersServices, HttpContext context, int imageId) =>
+        {
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+            {
+                // se non è ne admin ne collaboratore
+                //se la user che effettua la richiesta è lo stesso che ha prenotato
+                if(await imagesServices.GetUserOfBookedImage(imageId) == userId)
+                    await imagesServices.UnbookImage(imageId);
+                else
+                    return TypedResults.Forbid();
+            }
+            else
+            {
+                // se è admin o collaboratore
+                await imagesServices.UnbookImage(imageId);
+            }
+            //--------------------------------------------------------
+            
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
+
+        group.MapPost("/setsold/{imageId:int}", async Task<Results<NoContent, NotFound, UnauthorizedHttpResult, ForbidHttpResult>>
+            (ImagesServices imagesServices, UsersServices usersServices, HttpContext context, int imageId) =>
+        {
+            //------------------------- check se admin o collaboratore
+            var stringUserId = context.User.FindFirstValue("userId");
+
+            if (!int.TryParse(stringUserId, out int userId))
+                return TypedResults.Unauthorized();
+
+            if (!(await usersServices.IsAdmin(userId) || await usersServices.IsCollaborator(userId)))
+                return TypedResults.Forbid();
+            //--------------------------------------------------------
+
+            await imagesServices.SetSoldImage(imageId);
+
+            return TypedResults.NoContent();
+        }).RequireAuthorization();
     }
 }
 

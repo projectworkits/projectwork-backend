@@ -132,4 +132,95 @@ public class ImagesServices
         if(File.Exists(path))
             File.Delete(path);
     }
+
+    // ======================================================================= servizi api extra
+
+    public async Task<IEnumerable<Image>> GetListFilterAsync(string state)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            SELECT
+                photo_id AS Id,
+                title,
+                original_title,
+                year,
+                place,
+                path,
+                description,
+                state,
+                price,
+                booked_by
+            FROM public.photos
+            WHERE
+                state = @state;
+            """;
+
+        return await connection.QueryAsync<Image>(query, new {state});
+    }
+
+    public async Task BookImage(int photoId, int userId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.photos
+            SET
+                booked_by = @userId
+            WHERE
+                photo_id = @photoId;
+            """;
+
+        await connection.QueryAsync<Image>(query, new { userId, photoId });
+    }
+
+    public async Task<int> GetUserOfBookedImage(int photoId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            SELECT
+                booked_by
+            FROM public.photos
+            WHERE
+                photo_id = @photoId;
+            """;
+
+        return await connection.ExecuteScalarAsync<int>(query, new { photoId });
+    }
+
+    public async Task UnbookImage(int photoId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.photos
+            SET
+                booked_by = NULL
+            WHERE
+                photo_id = @photoId;
+            """;
+
+        await connection.QueryAsync<Image>(query, new { photoId });
+    }
+
+    public async Task SetSoldImage(int photoId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            UPDATE public.photos
+            SET
+                state = 'sold'
+            WHERE
+                photo_id = @photoId;
+            """;
+
+        await connection.ExecuteAsync(query, new { photoId });
+    }
 }
