@@ -24,7 +24,6 @@ public class UsersServices
                 password_salt,
                 password_hash,
                 email,
-                verified,
                 admin,
                 collaborator
             FROM users;
@@ -45,7 +44,6 @@ public class UsersServices
                 password_salt,
                 password_hash,
                 email,
-                verified,
                 admin,
                 collaborator
             FROM users
@@ -84,7 +82,6 @@ public class UsersServices
                 password_salt = @PasswordSalt,
                 password_hash = @PasswordHash,
                 email = @Email,
-                verified = @Verified,
                 collaborator = @Collaborator
             WHERE
                 user_id = @Id;

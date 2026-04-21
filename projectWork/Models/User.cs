@@ -7,7 +7,6 @@ public class User
     public string Email { get; set; }
     public string PasswordSalt { get; set; }
     public string PasswordHash { get; set; }
-    public DateTime Verified { get; set; }
     public bool Admin { get; set; } = false;
     public bool Collaborator { get; set; } = false;
 }
