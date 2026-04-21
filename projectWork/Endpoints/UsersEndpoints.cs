@@ -92,7 +92,7 @@ public static class UsersEndpoints
                 return TypedResults.Forbid();
             //--------------------------------------------------------
 
-            if (await usersServices.GetByIdAsync(user.Id) is null)
+            if (await usersServices.GetByIdAsync(user.UserId) is null)
                 return TypedResults.NotFound();
 
             await usersServices.UpdateAsync(user);

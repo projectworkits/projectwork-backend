@@ -71,7 +71,7 @@ public static class ImagesEndpoints
                 return TypedResults.Forbid();
             //--------------------------------------------------------
 
-            if (await imagesServices.GetByIdAsync(image.Id) is null)
+            if (await imagesServices.GetByIdAsync(image.PhotoId) is null)
                 return TypedResults.NotFound();
 
             await imagesServices.UpdateAsync(image);

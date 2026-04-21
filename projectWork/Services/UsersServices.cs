@@ -19,7 +19,7 @@ public class UsersServices
 
         string query = """
             SELECT
-                user_id as id,
+                user_id,
                 username,
                 password_salt,
                 password_hash,
@@ -39,7 +39,7 @@ public class UsersServices
 
         string query = """
             SELECT
-                user_id as id,
+                user_id,
                 username,
                 password_salt,
                 password_hash,

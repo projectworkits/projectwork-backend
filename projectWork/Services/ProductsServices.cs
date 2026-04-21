@@ -19,7 +19,7 @@ public class ProductsServices
 
         string query = """
             SELECT
-                product_id AS Id,
+                product_id,
                 name,
                 description,
                 price,
@@ -38,7 +38,7 @@ public class ProductsServices
 
         string query = """
             SELECT
-                product_id AS Id,
+                product_id,
                 name,
                 description,
                 price,

@@ -62,7 +62,7 @@ public static class ProductsEndpoints
                 return TypedResults.Forbid();
             //--------------------------------------------------------
 
-            if (await productsServices.GetByIdAsync(product.Id) is null)
+            if (await productsServices.GetByIdAsync(product.ProductId) is null)
                 return TypedResults.NotFound();
 
             await productsServices.UpdateAsync(product);

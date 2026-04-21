@@ -9,7 +9,7 @@ public enum PhotoState
 
 public class Image
 {
-    public int Id { get; set; }
+    public int PhotoId { get; set; }
     public string Title { get; set; }
     public string OriginalTitle { get; set; }
     public short Year { get; set; }

@@ -19,7 +19,7 @@ public class ImagesServices
 
         string query = """
             SELECT
-                photo_id AS Id,
+                photo_id,
                 title,
                 original_title,
                 date,
@@ -43,7 +43,7 @@ public class ImagesServices
 
         string query = """
             SELECT
-                photo_id AS Id,
+                photo_id,
                 title,
                 original_title,
                 date,
@@ -142,7 +142,7 @@ public class ImagesServices
 
         string query = """
             SELECT
-                photo_id AS Id,
+                photo_id,
                 title,
                 original_title,
                 date,
