@@ -160,6 +160,26 @@ public class ImagesServices
         return await connection.QueryAsync<Image>(query, new {state});
     }
 
+    public async Task<bool> IsBooked(int photoId)
+    {
+        var connection = new Npgsql.NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        string query = """
+            SELECT
+                booked_by
+            FROM public.photos
+            WHERE
+                photo_id = @photoId;
+            """;
+
+        if (await connection.ExecuteScalarAsync<bool?>(query, new { photoId }) ?? false)
+            return true;
+        else
+            return false;
+    }
+
+
     public async Task BookImage(int photoId, int userId)
     {
         var connection = new Npgsql.NpgsqlConnection(_connectionString);

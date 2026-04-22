@@ -110,7 +110,7 @@ public static class ImagesEndpoints
         });
 
         // prenotata da qualcuno
-        group.MapPut("/book/{imageId:int}/{userId:int}", async Task<Results<NoContent, NotFound>>
+        group.MapPut("/book/{imageId:int}/{userId:int}", async Task<Results<NoContent, NotFound, ForbidHttpResult>>
             (ImagesServices imagesServices, UsersServices usersServices, int imageId, int userId) =>
         {
             Image image = await imagesServices.GetByIdAsync(imageId);
@@ -120,6 +120,9 @@ public static class ImagesEndpoints
             User user = await usersServices.GetByIdAsync(userId);
             if (user is null)
                 return TypedResults.NotFound();
+
+            if(await imagesServices.IsBooked(imageId))
+                return TypedResults.Forbid();
 
             await imagesServices.BookImage(imageId, userId);
             return TypedResults.NoContent();
