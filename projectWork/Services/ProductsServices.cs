@@ -81,7 +81,7 @@ public class ProductsServices
                 available = @available,
                 sold = @sold
             WHERE
-                product_id = @id;
+                product_id = @productId;
             """;
 
         await connection.ExecuteAsync(query, product);

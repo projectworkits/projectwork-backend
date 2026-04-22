@@ -105,7 +105,7 @@ public class ImagesServices
                 price = @price,
                 booked_by = @BookedBy
             WHERE
-                photo_id = @Id;
+                photo_id = @ImageId;
             """;
 
         await connection.ExecuteAsync(query, image);

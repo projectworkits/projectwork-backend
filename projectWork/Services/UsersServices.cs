@@ -84,7 +84,7 @@ public class UsersServices
                 email = @Email,
                 collaborator = @Collaborator
             WHERE
-                user_id = @Id;
+                user_id = @UserId;
             """;
 
         await connection.ExecuteAsync(query, user);
