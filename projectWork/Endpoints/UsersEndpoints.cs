@@ -120,9 +120,6 @@ public static class UsersEndpoints
 
             await usersServices.DeleteAsync(id);
 
-            context.Response.Cookies.Delete("AccessToken");
-            context.Response.Cookies.Delete("RefreshToken");
-
             await usersServices.ExpireRefreshToken(id);
 
             return TypedResults.NoContent();
