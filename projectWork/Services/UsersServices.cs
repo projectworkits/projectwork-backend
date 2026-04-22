@@ -164,7 +164,7 @@ public class UsersServices
         string query = """
             UPDATE public.users
             SET
-                colalborator = true
+                collaborator = true
             WHERE
                 user_id = @userId;
             """;
@@ -180,7 +180,7 @@ public class UsersServices
         string query = """
             UPDATE public.users
             SET
-                colalborator = false
+                collaborator = false
             WHERE
                 user_id = @userId;
             """;
