@@ -148,7 +148,7 @@ public static class UsersEndpoints
                 return TypedResults.Forbid();
             //--------------------------------------------------------
 
-            await usersServices.OpCollaborator(userId);
+            await usersServices.OpCollaborator(id);
 
             return TypedResults.NoContent();
         }).RequireAuthorization();
@@ -170,7 +170,7 @@ public static class UsersEndpoints
                 return TypedResults.Forbid();
             //--------------------------------------------------------
 
-            await usersServices.DeopCollaborator(userId);
+            await usersServices.DeopCollaborator(id);
 
             return TypedResults.NoContent();
         }).RequireAuthorization();
