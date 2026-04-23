@@ -98,18 +98,15 @@ public class ImagesServices
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        var parameters = new DynamicParameters(image);
-        parameters.Add("State", image.State.ToString().ToLower());
-
         string query = """
             UPDATE public.photos
             SET
                 title = @Title,
                 original_title = @OriginalTitle,
-                date = @date,
+                date = @Date,
                 place = @Place,
                 path = @Path,
-                description = @description,
+                description = @Description,
                 state = @State::photo_state,
                 price = @price,
                 booked_by = @BookedBy
@@ -117,7 +114,18 @@ public class ImagesServices
                 photo_id = @PhotoId;
             """;
 
-        await connection.ExecuteAsync(query, image);
+        await connection.ExecuteAsync(query, new
+        {
+            image.Title,
+            image.OriginalTitle,
+            image.Date,
+            image.Place,
+            image.Path,
+            image.Description,
+            State = image.State.ToString().ToLower(),
+            image.Price,
+            image.BookedBy
+        });
     }
 
     public async Task DeleteAsync(int id)
