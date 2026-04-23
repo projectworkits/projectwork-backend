@@ -124,7 +124,8 @@ public class ImagesServices
             image.Description,
             State = image.State.ToString().ToLower(),
             image.Price,
-            image.BookedBy
+            image.BookedBy,
+            image.PhotoId
         });
     }
 
