@@ -66,16 +66,25 @@ public class ImagesServices
         var connection = new Npgsql.NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
-        var parameters = new DynamicParameters(image);
-        parameters.Add("State", image.State.ToString().ToLower());
-
         string query = """
             INSERT INTO public.photos
                 (title, original_title, date, place, path, description, state, price, booked_by)
             VALUES
-                (@Title, @OriginalTitle, @date, @Place, @Path, @Description, @State, @Price, @BookedBy);
+                (@Title, @OriginalTitle, @date, @Place, @Path, @Description, @State::photo_state, @Price, @BookedBy);
             """;
-        await connection.ExecuteAsync(query, parameters);
+
+        await connection.ExecuteAsync(query, new
+        {
+            image.Title,
+            image.OriginalTitle,
+            image.Date,
+            image.Place,
+            image.Path,
+            image.Description,
+            State = image.State.ToString().ToLower(),
+            image.Price,
+            image.BookedBy
+        });
 
         //inserimento file
         using var stream = new FileStream("/frontend"+image.Path, FileMode.Create);
@@ -101,14 +110,14 @@ public class ImagesServices
                 place = @Place,
                 path = @Path,
                 description = @description,
-                state = @State,
+                state = @State::photo_state,
                 price = @price,
                 booked_by = @BookedBy
             WHERE
                 photo_id = @PhotoId;
             """;
 
-        await connection.ExecuteAsync(query, parameters);
+        await connection.ExecuteAsync(query, image);
     }
 
     public async Task DeleteAsync(int id)
