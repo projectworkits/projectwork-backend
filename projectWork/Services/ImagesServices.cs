@@ -108,7 +108,7 @@ public class ImagesServices
                 photo_id = @PhotoId;
             """;
 
-        await connection.ExecuteAsync(query, image);
+        await connection.ExecuteAsync(query, parameters);
     }
 
     public async Task DeleteAsync(int id)
