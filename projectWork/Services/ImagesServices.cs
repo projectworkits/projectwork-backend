@@ -73,7 +73,7 @@ public class ImagesServices
             INSERT INTO public.photos
                 (title, original_title, date, place, path, description, state, price, booked_by)
             VALUES
-                (@Title, @OriginalTitle, @date, @Place, @Path, @Description, @Photo_state, @Price, @BookedBy);
+                (@Title, @OriginalTitle, @date, @Place, @Path, @Description, @State, @Price, @BookedBy);
             """;
         await connection.ExecuteAsync(query, parameters);
 
@@ -101,7 +101,7 @@ public class ImagesServices
                 place = @Place,
                 path = @Path,
                 description = @description,
-                state = @Photo_state,
+                state = @State,
                 price = @price,
                 booked_by = @BookedBy
             WHERE
