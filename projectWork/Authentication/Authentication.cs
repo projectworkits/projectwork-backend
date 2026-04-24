@@ -18,6 +18,7 @@ public class Authentication
     {
         _connectionString = configuration.GetConnectionString("db");
         _jwtSecret = configuration["jwtSecret"];
+        Console.WriteLine("jwt secret da Authentication.cs"+_jwtSecret);
         _passwordServices = passwordServices;
     }
 
